@@ -2,8 +2,18 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ポモドロ子</title>
   <style>
+    /* 基本スタイル */
+    body {
+      margin: 0;
+      padding: 10px;
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      line-height: 1.4;
+    }
+    
+    /* タイマースタイル */
     #timer {
       font-size: 4rem;
       font-weight: bold;
@@ -19,6 +29,115 @@
       margin-left: 0;
       margin-right: auto;
       font-family: 'Segoe UI', 'Roboto', sans-serif;
+    }
+    
+    /* ボタンのスタイル改善 */
+    button {
+      padding: 10px 15px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      background-color: #73cac6;
+      color: white;
+      cursor: pointer;
+      font-size: 14px;
+      min-height: 44px; /* タッチターゲットのサイズ確保 */
+    }
+    
+    button:hover {
+      background-color: #5a9a96;
+    }
+    
+    /* 入力フィールドの改善 */
+    input[type="text"], input[type="number"] {
+      padding: 8px;
+      margin: 5px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      font-size: 16px; /* iOS Safari のズームを防ぐ */
+      min-height: 44px;
+      box-sizing: border-box;
+    }
+    
+    /* モバイル対応: 768px以下 */
+    @media screen and (max-width: 768px) {
+      body {
+        padding: 5px;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+        margin: 10px 0;
+      }
+      
+      #timer {
+        font-size: 3rem;
+        padding: 15px;
+        margin: 15px 0;
+        max-width: none; /* モバイルでは幅制限を解除 */
+      }
+      
+      /* キャラクター表示エリアを縦並びに */
+      .character-container {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 15px !important;
+      }
+      
+      #character {
+        width: 200px !important;
+        height: 200px !important;
+      }
+      
+      /* プレイヤー情報ウィンドウ */
+      #playerInfo {
+        min-width: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+      }
+      
+      /* タブシステム */
+      #dataSection {
+        max-width: none !important;
+      }
+      
+      .tab-btn {
+        font-size: 12px !important;
+        padding: 8px !important;
+      }
+      
+      #tabContent {
+        max-height: 300px !important;
+      }
+      
+      /* アイテムグリッド */
+      #itemGrid {
+        grid-template-columns: 1fr !important; /* 1列表示 */
+      }
+    }
+    
+    /* 超小画面対応: 480px以下 */
+    @media screen and (max-width: 480px) {
+      #timer {
+        font-size: 2.5rem;
+        padding: 10px;
+      }
+      
+      h1 {
+        font-size: 1.5rem;
+      }
+      
+      button {
+        font-size: 12px;
+        padding: 8px 12px;
+      }
+      
+      input[type="text"], input[type="number"] {
+        width: 100%;
+        max-width: 100%;
+        margin: 3px 0;
+      }
     }
   </style>
 </head>
@@ -38,7 +157,7 @@
   <input type="number" id="bpmInput" value="120" min="1" max="300">
 
   <!-- キャラクター表示エリア -->
-  <div style="display: flex; align-items: flex-start; gap: 20px; margin-top: 20px;">
+  <div class="character-container" style="display: flex; align-items: flex-start; gap: 20px; margin-top: 20px;">
     <img id="character" src="images/walk1.png" alt="キャラ" width="256" height="256">
     
     <!-- プレイヤー情報ウィンドウ -->
