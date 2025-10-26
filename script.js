@@ -118,7 +118,13 @@ class PomodoroApp {
     updateDisplay() {
         const minutes = String(Math.floor(this.state.timer / 60)).padStart(2, '0');
         const seconds = String(this.state.timer % 60).padStart(2, '0');
-        document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+        const timerDisplay = document.getElementById('timerDisplay');
+        if (timerDisplay) {
+            timerDisplay.textContent = `${minutes}:${seconds}`;
+        } else {
+            // フォールバック: 古い構造の場合
+            document.getElementById('timer').textContent = `${minutes}:${seconds}`;
+        }
     }
     
     handleBPMChange() {

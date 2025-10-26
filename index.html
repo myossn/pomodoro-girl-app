@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>★ポモドロ子</title>
+  <title>ポモドロ子</title>
   <style>
     /* 基本スタイル */
     body {
@@ -15,10 +15,9 @@
     
     /* タイマースタイル */
     #timer {
-      font-size: 4rem;
-      font-weight: bold;
-      color: #3f3f3f;
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       margin: 20px 0;
       padding: 20px;
       border: 3px solid #73cac6;
@@ -28,7 +27,27 @@
       max-width: 400px;
       margin-left: 0;
       margin-right: auto;
+    }
+    
+    #timerDisplay {
+      font-size: 4rem;
+      font-weight: bold;
+      color: #3f3f3f;
       font-family: 'Segoe UI', 'Roboto', sans-serif;
+      flex-shrink: 0;
+    }
+    
+    .timer-buttons {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    
+    .timer-buttons button {
+      font-size: 0.9rem;
+      padding: 8px 12px;
+      margin: 0;
+      white-space: nowrap;
     }
     
     /* キャラクター画像のサイズ固定 */
@@ -36,6 +55,44 @@
       width: 256px !important;
       height: 256px !important;
       flex-shrink: 0; /* フレックスボックス内で縮小されないようにする */
+    }
+    
+    /* 入力行のレイアウト固定 */
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 10px 0;
+      flex-wrap: nowrap; /* 改行しない */
+    }
+    
+    .input-row label {
+      white-space: nowrap; /* ラベルテキストを改行しない */
+      flex-shrink: 0; /* ラベルのサイズを固定 */
+    }
+    
+    .input-row input {
+      flex: 1; /* 入力フィールドが余りスペースを埋める */
+      min-width: 100px; /* 最小幅を確保 */
+      max-width: 300px; /* 最大幅を制限 */
+    }
+    
+    /* タスク入力フィールドの個別設定 */
+    #taskInput {
+      max-width: 250px; /* タスクフィールドは少し広めに */
+    }
+    
+    /* BPM入力フィールドの個別設定 */
+    #bpmInput {
+      max-width: 80px; /* 数値入力なので狭めに */
+    }
+    
+    /* ボタン行のレイアウト */
+    .button-row {
+      display: flex;
+      gap: 10px;
+      margin: 10px 0;
+      flex-wrap: wrap; /* ボタンは必要に応じて改行可能 */
     }
     
     /* ボタンのスタイル改善 */
@@ -78,10 +135,18 @@
       }
       
       #timer {
-        font-size: 3rem;
         padding: 15px;
         margin: 15px 0;
         max-width: none; /* モバイルでは幅制限を解除 */
+      }
+      
+      #timerDisplay {
+        font-size: 3rem;
+      }
+      
+      .timer-buttons button {
+        font-size: 0.8rem;
+        padding: 6px 10px;
       }
       
       /* キャラクター表示エリアを縦並びに */
@@ -122,8 +187,16 @@
     /* 超小画面対応: 480px以下 */
     @media screen and (max-width: 480px) {
       #timer {
-        font-size: 2.5rem;
         padding: 10px;
+      }
+      
+      #timerDisplay {
+        font-size: 2.5rem;
+      }
+      
+      .timer-buttons button {
+        font-size: 0.7rem;
+        padding: 5px 8px;
       }
       
       h1 {
@@ -146,17 +219,24 @@
 <body>
   <h1>ポモドロ子</h1>
   
-  <div>
+  <div class="input-row">
     <label for="taskInput">今日のタスク:</label>
     <input type="text" id="taskInput" placeholder="入力してください" maxlength="50">
     <datalist id="taskSuggestions"></datalist>
-    <button id="startbtn">スタート</button>
-    <button id="resetbtn">リセット</button>
   </div>
-  <div id="timer">25:00</div>
+  
+  <div id="timer">
+    <span id="timerDisplay">25:00</span>
+    <div class="timer-buttons">
+      <button id="startbtn">スタート</button>
+      <button id="resetbtn">リセット</button>
+    </div>
+  </div>
 
-  <label for="bpmInput">歩く速さ=BPM:</label>
-  <input type="number" id="bpmInput" value="120" min="1" max="300">
+  <div class="input-row">
+    <label for="bpmInput">歩く速さ=BPM:</label>
+    <input type="number" id="bpmInput" value="120" min="1" max="300">
+  </div>
 
   <!-- キャラクター表示エリア -->
   <div class="character-container" style="display: flex; align-items: flex-start; gap: 20px; margin-top: 20px;">
