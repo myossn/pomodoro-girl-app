@@ -3,7 +3,7 @@
 // メインアプリケーションクラス
 class PomodoroApp {
     constructor() {
-        this.TIMER_DURATION = 10; // 25分
+        this.TIMER_DURATION = 25 * 60; // 25分
         
         this.state = {
             timer: this.TIMER_DURATION,
