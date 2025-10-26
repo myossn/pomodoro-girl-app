@@ -3,19 +3,24 @@
 // メインアプリケーションクラス
 class PomodoroApp {
     constructor() {
-        this.TIMER_DURATION = 25 * 60; // 25分
+        this.TIMER_DURATION = 10; // 25分
         
         this.state = {
             timer: this.TIMER_DURATION,
             isRunning: false,
             startTime: null,
-            gameTimerId: null
+            gameTimerId: null,
+            isMuted: false
         };
         
         // システム初期化
         this.taskManager = new TaskManager();
         this.gameSystem = new GameSystem();
         this.animationSystem = new AnimationSystem();
+        
+        // アラーム音の初期化
+        this.alarmSound = new Audio('sound/alarm.mp3');
+        this.alarmSound.preload = 'auto';
         
         this.init();
     }
@@ -25,6 +30,7 @@ class PomodoroApp {
         this.gameSystem.updateDisplay(); // ゲームシステムの表示も更新
         this.bindEvents();
         this.validateBPM();
+        this.updateMuteButton(); // ミュートボタンの初期化
     }
     
     bindEvents() {
@@ -32,6 +38,7 @@ class PomodoroApp {
         document.getElementById('resetbtn').addEventListener('click', () => this.resetTimer());
         document.getElementById('bpmInput').addEventListener('input', () => this.handleBPMChange());
         document.getElementById('exportbtn').addEventListener('click', () => this.taskManager.exportData());
+        document.getElementById('mutebtn').addEventListener('click', () => this.toggleMute());
         
         // ページ同期イベント
         document.addEventListener('visibilitychange', () => this.syncTimer());
@@ -87,6 +94,9 @@ class PomodoroApp {
     completePomodoro() {
         this.stopTimer();
         
+        // アラーム音を再生
+        this.playAlarm();
+        
         const taskName = document.getElementById('taskInput').value || '無題のタスク';
         this.taskManager.recordCompletion(taskName);
         this.gameSystem.completeExploration();
@@ -96,6 +106,60 @@ class PomodoroApp {
         this.updateDisplay();
         this.animationSystem.resetCharacter();
         
+    }
+    
+    playAlarm() {
+        // ミュート状態の場合は音声を再生しない
+        if (this.state.isMuted) {
+            this.fallbackNotification();
+            return;
+        }
+        
+        try {
+            // 音声を最初から再生
+            this.alarmSound.currentTime = 0;
+            this.alarmSound.play().catch(error => {
+                console.warn('アラーム音の再生に失敗しました:', error);
+                // フォールバック: ブラウザのデフォルト音
+                this.fallbackNotification();
+            });
+        } catch (error) {
+            console.warn('アラーム音の初期化に失敗しました:', error);
+            this.fallbackNotification();
+        }
+    }
+    
+    fallbackNotification() {
+        // ブラウザの通知音 (システム音)
+        if ('speechSynthesis' in window && !this.state.isMuted) {
+            const utterance = new SpeechSynthesisUtterance('ポモドーロ完了');
+            utterance.volume = 0.1;
+            speechSynthesis.speak(utterance);
+        }
+        
+        // ビジュアル通知
+        document.title = '🔔 ポモドーロ完了! - ポモドロ子';
+        setTimeout(() => {
+            document.title = 'ポモドロ子';
+        }, 5000);
+    }
+    
+    toggleMute() {
+        this.state.isMuted = !this.state.isMuted;
+        this.updateMuteButton();
+    }
+    
+    updateMuteButton() {
+        const muteBtn = document.getElementById('mutebtn');
+        if (this.state.isMuted) {
+            muteBtn.textContent = '🔇';
+            muteBtn.title = 'アラーム音をオンにする';
+            muteBtn.classList.add('muted');
+        } else {
+            muteBtn.textContent = '🔊';
+            muteBtn.title = 'アラーム音をオフにする';
+            muteBtn.classList.remove('muted');
+        }
     }
     
     updateTimer() {
@@ -535,15 +599,15 @@ class GameSystem {
     
     // レベルに応じた称号を取得
     getPlayerTitle(level) {
-        if (level >= 50) return "ポモドロマスター🌟";
-        if (level >= 40) return "不思議の国ツアーガイド";
-        if (level >= 30) return "ベテランポモドラー";
-        if (level >= 25) return "散歩好き";
-        if (level >= 20) return "敬虔なポモドラー";
+        if (level >= 50) return "ポモドロマスター";
+        if (level >= 40) return "ツアーガイド";
+        if (level >= 30) return "ポモドロ名人";
+        if (level >= 25) return "散歩が大好き";
+        if (level >= 20) return "敬虔ポモドラー";
         if (level >= 15) return "蒐集上手";
         if (level >= 10) return "25分間の探索者";
-        if (level >= 5) return "ポモドロ初級";
-        return "見習いポモドラー";
+        if (level >= 5) return "ポモドロ慣れ";
+        return "初級ポモドラー";
     }
 
     updateDisplay() {
@@ -557,7 +621,7 @@ class GameSystem {
         // 称号を含めてレベル表示を更新
         const playerLevelElement = document.getElementById('playerLevel');
         if (playerLevelElement) {
-            playerLevelElement.textContent = `Lv.${level} ${title}`;
+            playerLevelElement.textContent = `Lv.${level} 『${title}』`;
         }
         
         const expPercent = this.playerData.exp % 100;

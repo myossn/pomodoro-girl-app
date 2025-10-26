@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ポモドロ子</title>
   <style>
-    /* 基本スタイル */
+    /* === 基本スタイル === */
     body {
       margin: 0;
       padding: 10px;
       font-family: 'Segoe UI', 'Roboto', sans-serif;
       line-height: 1.4;
     }
-    
-    /* タイマースタイル */
+
+    /* === タイマー === */
     #timer {
       display: flex;
       align-items: center;
@@ -24,25 +24,26 @@
       border-radius: 15px;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
       box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-      max-width: 400px;
+      max-width:440px;
       margin-left: 0;
       margin-right: auto;
     }
-    
+
     #timerDisplay {
       font-size: 4rem;
       font-weight: bold;
       color: #3f3f3f;
-      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      font-family: inherit;
       flex-shrink: 0;
+      margin-left: 30px;
     }
-    
+
     .timer-buttons {
       display: flex;
       gap: 8px;
       flex-shrink: 0;
     }
-    
+
     .timer-buttons button {
       font-size: 0.9rem;
       padding: 8px 12px;
@@ -50,52 +51,64 @@
       white-space: nowrap;
     }
     
-    /* キャラクター画像のサイズ固定 */
-    #character {
-      width: 256px !important;
-      height: 256px !important;
-      flex-shrink: 0; /* フレックスボックス内で縮小されないようにする */
+    #mutebtn {
+      background-color: #ffffff;
     }
     
-    /* 入力行のレイアウト固定 */
+    #mutebtn.muted {
+      background-color: #ffffff;
+    }
+    
+    /* === 入力フィールド === */
     .input-row {
       display: flex;
       align-items: center;
       gap: 10px;
       margin: 10px 0;
-      flex-wrap: nowrap; /* 改行しない */
+      flex-wrap: nowrap;
     }
-    
+
     .input-row label {
-      white-space: nowrap; /* ラベルテキストを改行しない */
-      flex-shrink: 0; /* ラベルのサイズを固定 */
+      white-space: nowrap;
+      flex-shrink: 0;
     }
-    
+
     .input-row input {
-      flex: 1; /* 入力フィールドが余りスペースを埋める */
-      min-width: 100px; /* 最小幅を確保 */
-      max-width: 300px; /* 最大幅を制限 */
+      flex: 1;
+      min-width: 100px;
+      max-width: 300px;
     }
-    
-    /* タスク入力フィールドの個別設定 */
+
     #taskInput {
-      max-width: 250px; /* タスクフィールドは少し広めに */
+      max-width: 250px;
     }
-    
-    /* BPM入力フィールドの個別設定 */
+
     #bpmInput {
-      max-width: 80px; /* 数値入力なので狭めに */
+      max-width: 80px;
     }
-    
-    /* ボタン行のレイアウト */
-    .button-row {
+
+    /* === キャラクター === */
+    #character {
+      width: 256px !important;
+      height: 256px !important;
+      flex-shrink: 0;
+    }
+
+    .character-container {
       display: flex;
-      gap: 10px;
-      margin: 10px 0;
-      flex-wrap: wrap; /* ボタンは必要に応じて改行可能 */
+      align-items: flex-start;
+      gap: 20px;
+      margin-top: 20px;
     }
-    
-    /* ボタンのスタイル改善 */
+
+    #playerInfo {
+      border: 2px solid #73cac6;
+      padding: 15px;
+      border-radius: 10px;
+      min-width: 150px;
+    }
+
+    /* === UI要素 === */
     button {
       padding: 10px 15px;
       margin: 5px;
@@ -105,114 +118,152 @@
       color: white;
       cursor: pointer;
       font-size: 14px;
-      min-height: 44px; /* タッチターゲットのサイズ確保 */
+      min-height: 44px;
     }
-    
+
     button:hover {
       background-color: #5a9a96;
     }
-    
-    /* 入力フィールドの改善 */
+
     input[type="text"], input[type="number"] {
       padding: 8px;
       margin: 5px;
       border: 2px solid #ddd;
       border-radius: 5px;
-      font-size: 16px; /* iOS Safari のズームを防ぐ */
+      font-size: 16px;
       min-height: 44px;
       box-sizing: border-box;
     }
-    
-    /* モバイル対応: 768px以下 */
+
+    /* === タブシステム === */
+    #dataSection {
+      margin-top: 20px;
+      max-width: 800px;
+    }
+
+    #tabNavigation {
+      display: flex;
+      border-bottom: 2px solid #73cac6;
+      background-color: #F5DEB3;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .tab-btn.active {
+      background-color: #73cac6;
+      color: white;
+    }
+
+    .tab-btn:not(.active) {
+      background-color: #DDD;
+      color: #666;
+    }
+
+    #tabContent {
+      border: 1px solid #73cac6;
+      border-top: none;
+      max-height: 440px;
+      overflow-y: auto;
+    }
+
+    .tab-panel {
+      padding: 15px;
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    #itemGrid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 10px;
+    }
+
+    /* === モーダル === */
+    #resultModal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 3px solid #73cac6;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      z-index: 1000;
+    }
+
+    #modalBackground {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+
+    /* === レスポンシブ (タブレット) === */
     @media screen and (max-width: 768px) {
-      body {
-        padding: 5px;
-      }
-      
-      h1 {
-        font-size: 1.8rem;
-        margin: 10px 0;
-      }
+      body { padding: 5px; }
+      h1 { font-size: 1.8rem; margin: 10px 0; }
       
       #timer {
         padding: 15px;
         margin: 15px 0;
-        max-width: none; /* モバイルでは幅制限を解除 */
+        max-width: 440px;
       }
       
-      #timerDisplay {
-        font-size: 3rem;
-      }
+      #timerDisplay { font-size: 3rem; }
+      .timer-buttons button { font-size: 1rem; padding: 6px 10px; }
       
-      .timer-buttons button {
-        font-size: 0.8rem;
-        padding: 6px 10px;
-      }
+      .character-container { gap: 10px; }
       
-      /* キャラクター表示エリアを縦並びに */
-      .character-container {
-        flex-direction: column !important;
-        align-items: center !important;
-        gap: 15px !important;
-      }
-
-      /* プレイヤー情報ウィンドウ */
       #playerInfo {
-        min-width: auto !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        box-sizing: border-box;
-      }
-      
-      /* タブシステム */
-      #dataSection {
-        max-width: none !important;
-      }
-      
-      .tab-btn {
-        font-size: 12px !important;
-        padding: 8px !important;
-      }
-      
-      #tabContent {
-        max-height: 300px !important;
-      }
-      
-      /* アイテムグリッド */
-      #itemGrid {
-        grid-template-columns: 1fr !important; /* 1列表示 */
-      }
-    }
-    
-    /* 超小画面対応: 480px以下 */
-    @media screen and (max-width: 480px) {
-      #timer {
+        min-width: 150px;
         padding: 10px;
+        font-size: 0.9rem;
       }
       
-      #timerDisplay {
-        font-size: 2.5rem;
+      #playerInfo h3 { font-size: 1rem; margin: 5px 0; }
+      #playerInfo div { font-size: 1rem; margin: 3px 0; }
+      #expBar { height: 8px; }
+      
+      #dataSection { max-width: none; }
+      .tab-btn { font-size: 12px; padding: 8px; }
+      #tabContent { max-height: 300px; }
+      #itemGrid { grid-template-columns: 1fr; }
+    }
+
+    /* === レスポンシブ (スマートフォン) === */
+    @media screen and (max-width: 480px) {
+      h1 { font-size: 1.5rem; }
+      
+      #timer { padding: 10px; }
+      #timerDisplay { font-size: 2.5rem; }
+      .timer-buttons button { font-size: 1rem; padding: 5px 8px; }
+      
+      #playerInfo {
+        min-width: 150px;
+        padding: 8px;
+        font-size: 1rem;
       }
       
-      .timer-buttons button {
-        font-size: 0.7rem;
-        padding: 5px 8px;
-      }
+      #playerInfo h3 { font-size: 1rem; }
+      #playerInfo div { font-size: 0.75rem; }
       
-      h1 {
-        font-size: 1.5rem;
-      }
-      
-      button {
-        font-size: 12px;
-        padding: 8px 12px;
-      }
-      
-      input[type="text"], input[type="number"] {
-        width: 100%;
-        max-width: 100%;
-        margin: 3px 0;
-      }
+      button { font-size: 12px; padding: 8px 12px; }
+      input[type="text"], input[type="number"] { width: 100%; max-width: 100%; margin: 3px 0; }
     }
   </style>
 </head>
@@ -230,6 +281,7 @@
     <div class="timer-buttons">
       <button id="startbtn">スタート</button>
       <button id="resetbtn">リセット</button>
+      <button id="mutebtn" title="アラーム音をオフにする">🔊</button>
     </div>
   </div>
 
@@ -238,14 +290,11 @@
     <input type="number" id="bpmInput" value="120" min="1" max="300">
   </div>
 
-  <!-- キャラクター表示エリア -->
-  <div class="character-container" style="display: flex; align-items: flex-start; gap: 20px; margin-top: 20px;">
+  <div class="character-container">
     <img id="character" src="images/walk1.png" alt="キャラ" width="256" height="256">
     
-    <!-- プレイヤー情報ウィンドウ -->
-    <div id="playerInfo" style="border: 2px solid #73cac6; padding: 15px; border-radius: 10px; min-width: 200px;">
-      <h3 style="margin-top: 0; color: #4A4A4A;">◆ 探索に出かけよう ◆</h3>
-      <div id="playerLevel">Lv.<span id="level">1</span> 🌱 見習いポモドラー</div>
+    <div id="playerInfo">
+      <div id="playerLevel">Lv.<span id="level">1</span>  🌱 見習いポモドラー</div>
       <div id="expDisplay">
         EXP: <span id="currentExp">0</span>/<span id="nextExp">100</span>
         <div style="background-color: #DDD; height: 10px; border-radius: 5px; margin: 5px 0;">
@@ -254,7 +303,6 @@
       </div>
       <div id="dungeonInfo">📍 迷宮 1F を探索中</div>
       
-      <!-- 探索状況 -->
       <div id="explorationArea" style="margin-top: 15px;">
         <div style="font-weight: bold; margin-bottom: 10px;">🔍 発見したアイテム</div>
         <div id="itemBoxDisplay" style="min-height: 40px; border: 1px dashed #999; padding: 10px; background-color: #FFF;">
@@ -264,8 +312,7 @@
     </div>
   </div>
   
-  <!-- 結果ウィンドウ -->
-  <div id="resultModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 3px solid #73cac6; border-radius: 10px; padding: 20px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 1000;">
+  <div id="resultModal">
     <h3>🎉 探索完了！</h3>
     <div id="foundItems" style="margin: 15px 0;"></div>
     <div id="expGained" style="margin: 15px 0; font-weight: bold; color: #2E8B57;"></div>
@@ -273,37 +320,30 @@
     <button onclick="closeResultModal()" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">続ける</button>
   </div>
   
-  <!-- モーダル背景 -->
-  <div id="modalBackground" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 999;"></div>
+  <div id="modalBackground"></div>
   
-  <!-- データ表示エリア（タブシステム） -->
-  <div id="dataSection" style="margin-top: 20px; max-width: 800px;">
-    <!-- タブナビゲーション -->
-    <div id="tabNavigation" style="display: flex; border-bottom: 2px solid #73cac6; background-color: #F5DEB3;">
-      <button class="tab-btn active" data-tab="tasks" style="flex: 1; padding: 12px; border: none; background-color: #73cac6; color: white; cursor: pointer; font-weight: bold;">📝 タスク記録</button>
-      <button class="tab-btn" data-tab="items" style="flex: 1; padding: 12px; border: none; background-color: #DDD; color: #666; cursor: pointer;">📚 アイテム図鑑</button>
-      <button class="tab-btn" data-tab="stats" style="flex: 1; padding: 12px; border: none; background-color: #DDD; color: #666; cursor: pointer;">📊 統計</button>
+  <div id="dataSection">
+    <div id="tabNavigation">
+      <button class="tab-btn active" data-tab="tasks">📝 タスク記録</button>
+      <button class="tab-btn" data-tab="items">📚 アイテム図鑑</button>
+      <button class="tab-btn" data-tab="stats">📊 統計</button>
     </div>
     
-    <!-- タブコンテンツ -->
-    <div id="tabContent" style="border: 1px solid #73cac6; border-top: none; max-height: 400px; overflow-y: auto;">
-      
-      <!-- タスク記録タブ -->
-      <div id="tasksTab" class="tab-panel" style="padding: 15px;">
+    <div id="tabContent">
+      <div id="tasksTab" class="tab-panel active">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-          <h3 style="margin: 0;">📝 タスク記録</h3><button id="exportbtn">📊 CSV出力</button>
+          <h3 style="margin: 0;">📝 タスク記録</h3>
+          <button id="exportbtn">📊 CSV出力</button>
         </div>
         <div id="recordsList">記録はありません</div>
       </div>
       
-      <!-- アイテム図鑑タブ -->
-      <div id="itemsTab" class="tab-panel" style="display: none; padding: 15px;">
+      <div id="itemsTab" class="tab-panel">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
           <h3 style="margin: 0;">📚 アイテム図鑑</h3>
           <div id="completionRate" style="font-weight: bold; color: #4CAF50;">0/20 (0%)</div>
         </div>
         
-        <!-- レアリティフィルター -->
         <div style="margin-bottom: 15px;">
           <button class="rarity-filter active" data-rarity="all" style="margin-right: 5px; padding: 5px 10px; border: 1px solid #ddd; background: #f0f0f0; cursor: pointer; border-radius: 3px;">全て</button>
           <button class="rarity-filter" data-rarity="common" style="margin-right: 5px; padding: 5px 10px; border: 1px solid #73cac6; background: white; cursor: pointer; border-radius: 3px; color: #8B4513;">コモン</button>
@@ -312,14 +352,10 @@
           <button class="rarity-filter" data-rarity="legendary" style="margin-right: 5px; padding: 5px 10px; border: 1px solid #FFD700; background: white; cursor: pointer; border-radius: 3px; color: #FFD700;">レジェンダリー</button>
         </div>
         
-        <!-- アイテム一覧 -->
-        <div id="itemGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 10px;">
-          <!-- アイテムカードがここに動的に生成される -->
-        </div>
+        <div id="itemGrid"></div>
       </div>
       
-      <!-- 統計タブ -->
-      <div id="statsTab" class="tab-panel" style="display: none; padding: 15px;">
+      <div id="statsTab" class="tab-panel">
         <h3 style="margin-top: 0;">📊 統計情報</h3>
         
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
@@ -346,14 +382,16 @@
         
         <div style="margin-top: 20px;">
           <h4>📈 レアリティ別取得数</h4>
-          <div id="rarityStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
-            <!-- レアリティ別統計がここに生成される -->
-          </div>
+          <div id="rarityStats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;"></div>
         </div>
       </div>
-      
     </div>
   </div>
+
+  <!-- クレジット -->
+  <footer style="text-align: center; margin-top: 40px; padding: 20px; border-top: 1px solid #ddd; color: #666; font-size: 0.9rem;">
+    <p>BGM：MaouDamashii</p>
+  </footer>
 
   <script src="script.js"></script>
 </body>
