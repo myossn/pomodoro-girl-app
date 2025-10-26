@@ -152,11 +152,11 @@ class PomodoroApp {
     updateMuteButton() {
         const muteBtn = document.getElementById('mutebtn');
         if (this.state.isMuted) {
-            muteBtn.textContent = '🔇';
+            muteBtn.textContent = '🔇アラームなし';
             muteBtn.title = 'アラーム音をオンにする';
             muteBtn.classList.add('muted');
         } else {
-            muteBtn.textContent = '🔊';
+            muteBtn.textContent = '🔊アラームあり';
             muteBtn.title = 'アラーム音をオフにする';
             muteBtn.classList.remove('muted');
         }
