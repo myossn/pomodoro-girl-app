@@ -1,6 +1,8 @@
 // ポモドロタイマー & RPG統合アプリケーション - リファクタリング版
 
+// ========================================
 // メインアプリケーションクラス
+// ========================================
 class PomodoroApp {
     constructor() {
         this.TIMER_DURATION = 25 * 60; // 25分
@@ -27,10 +29,10 @@ class PomodoroApp {
     
     init() {
         this.updateDisplay();
-        this.gameSystem.updateDisplay(); // ゲームシステムの表示も更新
+        this.gameSystem.updateDisplay();
         this.bindEvents();
         this.validateBPM();
-        this.updateMuteButton(); // ミュートボタンの初期化
+        this.updateMuteButton();
     }
     
     bindEvents() {
@@ -46,11 +48,7 @@ class PomodoroApp {
     }
     
     toggleTimer() {
-        if (this.state.isRunning) {
-            this.stopTimer();
-        } else {
-            this.startTimer();
-        }
+        this.state.isRunning ? this.stopTimer() : this.startTimer();
     }
     
     startTimer() {
@@ -93,8 +91,6 @@ class PomodoroApp {
     
     completePomodoro() {
         this.stopTimer();
-        
-        // アラーム音を再生
         this.playAlarm();
         
         const taskName = document.getElementById('taskInput').value || '無題のタスク';
@@ -105,22 +101,18 @@ class PomodoroApp {
         this.state.timer = this.TIMER_DURATION;
         this.updateDisplay();
         this.animationSystem.resetCharacter();
-        
     }
     
     playAlarm() {
-        // ミュート状態の場合は音声を再生しない
         if (this.state.isMuted) {
             this.fallbackNotification();
             return;
         }
         
         try {
-            // 音声を最初から再生
             this.alarmSound.currentTime = 0;
             this.alarmSound.play().catch(error => {
                 console.warn('アラーム音の再生に失敗しました:', error);
-                // フォールバック: ブラウザのデフォルト音
                 this.fallbackNotification();
             });
         } catch (error) {
@@ -130,18 +122,14 @@ class PomodoroApp {
     }
     
     fallbackNotification() {
-        // ブラウザの通知音 (システム音)
         if ('speechSynthesis' in window && !this.state.isMuted) {
             const utterance = new SpeechSynthesisUtterance('ポモドーロ完了');
             utterance.volume = 0.1;
             speechSynthesis.speak(utterance);
         }
         
-        // ビジュアル通知
         document.title = '🔔 ポモドーロ完了! - ポモドロ子';
-        setTimeout(() => {
-            document.title = 'ポモドロ子';
-        }, 5000);
+        setTimeout(() => { document.title = 'ポモドロ子'; }, 5000);
     }
     
     toggleMute() {
@@ -151,15 +139,11 @@ class PomodoroApp {
     
     updateMuteButton() {
         const muteBtn = document.getElementById('mutebtn');
-        if (this.state.isMuted) {
-            muteBtn.textContent = '🔇アラームなし';
-            muteBtn.title = 'アラーム音をオンにする';
-            muteBtn.classList.add('muted');
-        } else {
-            muteBtn.textContent = '🔊アラームあり';
-            muteBtn.title = 'アラーム音をオフにする';
-            muteBtn.classList.remove('muted');
-        }
+        const isMuted = this.state.isMuted;
+        
+        muteBtn.textContent = isMuted ? '🔇アラームなし' : '🔊アラームあり';
+        muteBtn.title = isMuted ? 'アラーム音をオンにする' : 'アラーム音をオフにする';
+        muteBtn.classList.toggle('muted', isMuted);
     }
     
     updateTimer() {
@@ -182,12 +166,10 @@ class PomodoroApp {
     updateDisplay() {
         const minutes = String(Math.floor(this.state.timer / 60)).padStart(2, '0');
         const seconds = String(this.state.timer % 60).padStart(2, '0');
-        const timerDisplay = document.getElementById('timerDisplay');
+        const timerDisplay = document.getElementById('timerDisplay') || document.getElementById('timer');
+        
         if (timerDisplay) {
             timerDisplay.textContent = `${minutes}:${seconds}`;
-        } else {
-            // フォールバック: 古い構造の場合
-            document.getElementById('timer').textContent = `${minutes}:${seconds}`;
         }
     }
     
@@ -207,7 +189,9 @@ class PomodoroApp {
     }
 }
 
+// ========================================
 // アニメーションシステム
+// ========================================
 class AnimationSystem {
     constructor() {
         this.frameCount = 6;
@@ -241,11 +225,13 @@ class AnimationSystem {
     
     resetCharacter() {
         this.currentFrame = 1;
-        document.getElementById('character').src = `images/walk1.png`;
+        document.getElementById('character').src = 'images/walk1.png';
     }
 }
 
+// ========================================
 // タスク管理システム
+// ========================================
 class TaskManager {
     constructor() {
         this.data = this.loadData();
@@ -324,7 +310,7 @@ class TaskManager {
                 const tasks = Object.entries(grouped[date])
                     .map(([task, count]) => `<li>${task}: ${count}回完了</li>`)
                     .join('');
-                return `<div style=\"margin-bottom: 10px;\"><strong>${date}</strong><ul style=\"margin: 5px 0;\">${tasks}</ul></div>`;
+                return `<div style="margin-bottom: 10px;"><strong>${date}</strong><ul style="margin: 5px 0;">${tasks}</ul></div>`;
             })
             .join('');
         
@@ -332,17 +318,14 @@ class TaskManager {
     }
     
     exportData() {
-        // CSVヘッダー
         const csvHeader = 'タスク名,完了日時,所要時間(分),メモ\n';
         
-        // データをCSV形式に変換
         const csvRows = this.data.completions.map(completion => {
             const taskName = completion.task || '未設定';
             const completedAt = new Date(completion.timestamp).toLocaleString('ja-JP');
-            const duration = Math.round(completion.duration / 60); // 秒を分に変換
-            const memo = ''; // 将来的にメモ機能を追加する場合
+            const duration = Math.round(completion.duration / 60);
+            const memo = '';
             
-            // CSVエスケープ（カンマや改行を含む場合にダブルクォートで囲む）
             const escapeCSV = (value) => {
                 if (value.includes(',') || value.includes('"') || value.includes('\n')) {
                     return `"${value.replace(/"/g, '""')}"`;
@@ -353,10 +336,7 @@ class TaskManager {
             return `${escapeCSV(taskName)},${escapeCSV(completedAt)},${duration},${escapeCSV(memo)}`;
         }).join('\n');
         
-        // CSVコンテンツを結合
         const csvContent = csvHeader + csvRows;
-        
-        // BOM付きUTF-8でBlobを作成（Excelで文字化けを防ぐため）
         const bom = '\uFEFF';
         const blob = new Blob([bom + csvContent], { type: 'text/csv;charset=utf-8' });
         const url = URL.createObjectURL(blob);
@@ -371,35 +351,31 @@ class TaskManager {
     }
 }
 
+// ========================================
 // ゲームシステム
+// ========================================
 class GameSystem {
     constructor() {
         this.playerData = this.loadPlayerData();
         this.itemBoxes = [];
         this.explorationTimer = null;
         this.startTime = null;
-        
-        // アイテムデータを非同期で読み込み
         this.itemData = null;
+        
         this.loadItemData();
     }
     
     async loadItemData() {
         try {
-            // ローカルファイルでは fetch が使用できないため、フォールバックを使用
             if (window.location.protocol === 'file:') {
-                console.log('ローカルファイルモード: フォールバックデータを使用');
                 this.itemData = this.getFallbackItemData();
                 return;
             }
             
             const response = await fetch('items.json');
             this.itemData = await response.json();
-            console.log('アイテムデータを読み込みました');
         } catch (error) {
-            console.warn('アイテムデータの読み込みに失敗しました:', error);
-            console.log('フォールバックデータを使用します');
-            // フォールバック: ハードコードされたデータを使用
+            console.warn('アイテムデータの読み込みに失敗しました。フォールバックデータを使用します');
             this.itemData = this.getFallbackItemData();
         }
     }
@@ -407,17 +383,32 @@ class GameSystem {
     getFallbackItemData() {
         return {
             items: {
-                common: ['古びたコイン', 'かけた剣', '謎の種', '小さな薬草', 'ボロボロの地図'],
+                common: ['サビたスプーン', 'オイル切れライター', 'アルミの弁当箱', '折れた鉛筆の芯', 'カエルの指人形', 'ペットボトルロケット', '手書きの魔法陣', 'カフェのポイントカード', '5色ボールペン', '充電ケーブル', '缶コーヒー', '理髪店のサインポール', '熊の置物', 'りんご', '小銭', 'くたびれた長靴', '呼び鈴', 'トランプ', 'インスタントカメラ', 'めざまし時計'],
                 rare: ['魔法の水晶', '古代の書物', '光る石', '銀の指輪', '精霊の羽'],
                 epic: ['ドラゴンの鱗', '賢者の杖', '時の砂時計', '聖なる盾', '不死鳥の羽根'],
                 legendary: ['世界樹の葉', '創造の石', '無限の知識', '星の欠片', '真理の書']
             },
             descriptions: {
-                '古びたコイン': '迷宮で見つけた古い通貨。まだ価値があるかもしれない。',
-                'かけた剣': '刃こぼれした古い剣。修理すれば使えそうだ。',
-                '謎の種': '正体不明の植物の種。何が育つのだろうか？',
-                '小さな薬草': '体力回復に効果のある薬草。冒険には必須のアイテム。',
-                'ボロボロの地図': '破れかけた古い地図。秘密の場所が記されている？',
+                'サビたスプーン': '壁を掘るには心もとない',
+                'オイル切れライター': 'もう役目を終えている',
+                'アルミの弁当箱': 'フタがピッタリはまると気持ちいい',
+                '折れた鉛筆の芯': 'どうやって芯だけ見つけたんだろう',
+                'カエルの指人形': '小さい頃、薬局で見たことがある',
+                'ペットボトルロケット': 'ヒトに向けてはいけません',
+                '手書きの魔法陣': '裏はレシート',
+                'カフェのポイントカード': 'スタンプが1つ押してある',
+                '5色ボールペン': '大人になると買わなくなるかも',
+                '充電ケーブル': 'ラベルにはvodafoneと書いてある',
+                '缶コーヒー': 'インスタントお茶会用',
+                '理髪店のサインポール': 'イギリスでは赤と白の2色らしい',
+                '熊の置物': '当然のように鮭を咥えている',
+                'りんご': 'アップルパイやタタンがすき！',
+                '小銭': 'これで迷ったときにコイントスできるよ',
+                'くたびれた長靴': '中に雨水が溜まっている',
+                '呼び鈴': '山を歩く時に使えるかも？',
+                'トランプ': 'ドレスもシュラフもほしい',
+                'インスタントカメラ': 'なにが写っているのか気になる',
+                'めざまし時計': 'たまには距離をおきたくなるよね',
                 '魔法の水晶': '魔力を宿した美しい水晶。触れると温かい。',
                 '古代の書物': '古代文字で書かれた謎の書物。知識の宝庫だ。',
                 '光る石': '暗闇でも光を放つ不思議な石。道標として使えそう。',
@@ -517,6 +508,8 @@ class GameSystem {
     
     updateItemBoxDisplay() {
         const container = document.getElementById('itemBoxes');
+        if (!container) return;
+        
         container.innerHTML = '';
         
         if (!this.itemData) return;
@@ -534,8 +527,7 @@ class GameSystem {
         this.stopExploration();
         
         if (!this.itemData) {
-            console.warn('アイテムデータがまだ読み込まれていません');
-            return;
+            this.itemData = this.getFallbackItemData();
         }
         
         const foundItems = [];
@@ -576,28 +568,38 @@ class GameSystem {
         const modal = document.getElementById('resultModal');
         const background = document.getElementById('modalBackground');
         
-        if (!this.itemData) return;
+        if (!modal || !background) {
+            console.error('モーダル要素が見つかりません');
+            return;
+        }
         
-        const itemsHtml = items.map(item => 
-            `<span style=\"color: ${this.itemData.rarityColors[item.rarity]};\">• ${item.name} (${item.rarity})</span>`
-        ).join('<br>');
+        if (!this.itemData) {
+            this.itemData = this.getFallbackItemData();
+        }
         
-        document.getElementById('foundItems').innerHTML = `<strong>🎁 発見したアイテム:</strong><br>${itemsHtml}`;
-        document.getElementById('expGained').innerHTML = `✨経験値 +${exp}`;
+        const itemsHtml = items.length > 0 
+            ? items.map(item => 
+                `<span style="color: ${this.itemData.rarityColors[item.rarity]};">• ${item.name} (${item.rarity})</span>`
+              ).join('<br>')
+            : '<span style="color: #999;">アイテムは見つかりませんでした</span>';
+        
+        this.setElementContent('foundItems', `<strong>🎁 発見したアイテム:</strong><br>${itemsHtml}`);
+        this.setElementContent('expGained', `✨経験値 +${exp}`);
         
         const levelUpDiv = document.getElementById('levelUpMessage');
-        if (leveledUp) {
-            levelUpDiv.innerHTML = `🎉 レベルアップ！ Lv.${this.playerData.level}`;
-            levelUpDiv.style.display = 'block';
-        } else {
-            levelUpDiv.style.display = 'none';
+        if (levelUpDiv) {
+            if (leveledUp) {
+                levelUpDiv.innerHTML = `🎉 レベルアップ！ Lv.${this.playerData.level}`;
+                levelUpDiv.style.display = 'block';
+            } else {
+                levelUpDiv.style.display = 'none';
+            }
         }
         
         modal.style.display = 'block';
         background.style.display = 'block';
     }
     
-    // レベルに応じた称号を取得
     getPlayerTitle(level) {
         if (level >= 50) return "ポモドロマスター";
         if (level >= 40) return "ツアーガイド";
@@ -614,38 +616,40 @@ class GameSystem {
         const level = this.playerData.level;
         const title = this.getPlayerTitle(level);
         
-        document.getElementById('level').textContent = level;
-        document.getElementById('currentExp').textContent = this.playerData.exp % 100;
-        document.getElementById('nextExp').textContent = '100';
+        this.setElementContent('level', level);
+        this.setElementContent('currentExp', this.playerData.exp % 100);
+        this.setElementContent('nextExp', '100');
         
-        // 称号を含めてレベル表示を更新
         const playerLevelElement = document.getElementById('playerLevel');
         if (playerLevelElement) {
-            playerLevelElement.textContent = `Lv.${level} 『${title}』`;
+            playerLevelElement.innerHTML = `Lv.<span id="level">${level}</span>  ${title}`;
         }
         
         const expPercent = this.playerData.exp % 100;
-        document.getElementById('expBar').style.width = expPercent + '%';
+        const expBarElement = document.getElementById('expBar');
+        if (expBarElement) {
+            expBarElement.style.width = expPercent + '%';
+        }
         
         const floor = Math.floor(this.playerData.totalPomodoros / 10) + 1;
-        console.log(`Debug: totalPomodoros=${this.playerData.totalPomodoros}, floor=${floor}`);
-        
-        const dungeonElement = document.getElementById('dungeonInfo');
-        if (dungeonElement) {
-            dungeonElement.textContent = `📍 迷宮 ${floor}F を探索中`;
-        } else {
-            console.error('dungeonInfo element not found');
+        this.setElementContent('dungeonInfo', `📍 迷宮 ${floor}F を探索中`);
+    }
+    
+    setElementContent(id, content) {
+        const element = document.getElementById(id);
+        if (element) {
+            if (typeof content === 'string' && content.includes('<')) {
+                element.innerHTML = content;
+            } else {
+                element.textContent = content;
+            }
         }
     }
 }
 
-// モーダル制御
-function closeResultModal() {
-    document.getElementById('resultModal').style.display = 'none';
-    document.getElementById('modalBackground').style.display = 'none';
-}
-
+// ========================================
 // タブシステム
+// ========================================
 class TabSystem {
     constructor() {
         this.currentTab = 'tasks';
@@ -653,15 +657,12 @@ class TabSystem {
     }
     
     init() {
-        // タブボタンのイベントリスナー
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                const tab = e.target.dataset.tab;
-                this.switchTab(tab);
+                this.switchTab(e.target.dataset.tab);
             });
         });
         
-        // レアリティフィルターのイベントリスナー
         document.querySelectorAll('.rarity-filter').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 this.setRarityFilter(e.target.dataset.rarity);
@@ -670,20 +671,13 @@ class TabSystem {
     }
     
     switchTab(tabName) {
-        // タブボタンのスタイル更新
         document.querySelectorAll('.tab-btn').forEach(btn => {
-            if (btn.dataset.tab === tabName) {
-                btn.style.backgroundColor = '#73cac6';
-                btn.style.color = 'white';
-                btn.classList.add('active');
-            } else {
-                btn.style.backgroundColor = '#DDD';
-                btn.style.color = '#666';
-                btn.classList.remove('active');
-            }
+            const isActive = btn.dataset.tab === tabName;
+            btn.style.backgroundColor = isActive ? '#73cac6' : '#DDD';
+            btn.style.color = isActive ? 'white' : '#666';
+            btn.classList.toggle('active', isActive);
         });
         
-        // タブパネルの表示切り替え
         document.querySelectorAll('.tab-panel').forEach(panel => {
             panel.style.display = 'none';
         });
@@ -695,7 +689,6 @@ class TabSystem {
         
         this.currentTab = tabName;
         
-        // タブ切り替え時にコンテンツを更新
         if (tabName === 'items') {
             this.updateItemCatalog();
         } else if (tabName === 'stats') {
@@ -704,24 +697,14 @@ class TabSystem {
     }
     
     setRarityFilter(rarity) {
-        // フィルターボタンのスタイル更新
         document.querySelectorAll('.rarity-filter').forEach(btn => {
-            if (btn.dataset.rarity === rarity) {
-                btn.style.backgroundColor = '#f0f0f0';
-                btn.classList.add('active');
-            } else {
-                btn.style.backgroundColor = 'white';
-                btn.classList.remove('active');
-            }
+            const isActive = btn.dataset.rarity === rarity;
+            btn.style.backgroundColor = isActive ? '#f0f0f0' : 'white';
+            btn.classList.toggle('active', isActive);
         });
         
-        // アイテムカードのフィルタリング
         document.querySelectorAll('.item-card').forEach(card => {
-            if (rarity === 'all' || card.dataset.rarity === rarity) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
+            card.style.display = (rarity === 'all' || card.dataset.rarity === rarity) ? 'block' : 'none';
         });
     }
     
@@ -735,7 +718,6 @@ class TabSystem {
             return;
         }
         
-        // 全アイテムリストを作成
         const allItems = [];
         Object.entries(gameSystem.itemData.items).forEach(([rarity, items]) => {
             items.forEach(item => {
@@ -743,14 +725,12 @@ class TabSystem {
             });
         });
         
-        // 発見したアイテム数を計算
         const discoveredCount = Object.keys(gameSystem.playerData.discoveredItems).length;
         const totalCount = allItems.length;
         const percentage = totalCount > 0 ? Math.round((discoveredCount / totalCount) * 100) : 0;
         
         completionRate.textContent = `${discoveredCount}/${totalCount} (${percentage}%)`;
         
-        // アイテムカードを生成
         itemGrid.innerHTML = '';
         
         allItems.forEach(({ name, rarity }) => {
@@ -762,7 +742,6 @@ class TabSystem {
             card.dataset.rarity = rarity;
             
             if (isDiscovered) {
-                // 発見済みアイテム
                 card.innerHTML = `
                     <div style="color: ${gameSystem.itemData.rarityColors[rarity]}; font-weight: bold; margin-bottom: 8px;">
                         ✨ ${name}
@@ -779,7 +758,6 @@ class TabSystem {
                 `;
                 card.style.cssText = 'border: 1px solid #ddd; padding: 12px; border-radius: 8px; background-color: #fafafa;';
             } else {
-                // 未発見アイテム
                 card.innerHTML = `
                     <div style="color: #999; font-weight: bold; margin-bottom: 8px;">
                         ❓ ？？？
@@ -803,9 +781,7 @@ class TabSystem {
     
     updateStats() {
         const gameSystem = app.gameSystem;
-        const taskManager = app.taskManager;
         
-        // 基本統計
         document.getElementById('totalPomodorosStat').textContent = gameSystem.playerData.totalPomodoros;
         document.getElementById('currentLevelStat').textContent = gameSystem.playerData.level;
         document.getElementById('totalItemsStat').textContent = gameSystem.playerData.totalItems;
@@ -813,7 +789,6 @@ class TabSystem {
         const floor = Math.floor(gameSystem.playerData.totalPomodoros / 10) + 1;
         document.getElementById('dungeonFloorStat').textContent = `${floor}F`;
         
-        // レアリティ別統計
         const rarityStats = document.getElementById('rarityStats');
         const rarityCount = { common: 0, rare: 0, epic: 0, legendary: 0 };
         
@@ -832,12 +807,22 @@ class TabSystem {
         rarityStats.innerHTML = Object.entries(rarityCount).map(([rarity, count]) => `
             <div style="border: 1px solid ${gameSystem.itemData.rarityColors[rarity]}; padding: 10px; border-radius: 5px; text-align: center;">
                 <div style="font-size: 1.5em; font-weight: bold; color: ${gameSystem.itemData.rarityColors[rarity]};">${count}</div>
-                <div style="color: #666; font-size: 0.9em;">${gameSystem.itemData.rarityNames[rarity]}</div>
+                <div style="color: #666; font-size: 0.9em;">${rarity}</div>
             </div>
         `).join('');
     }
 }
 
+// ========================================
+// モーダル制御
+// ========================================
+function closeResultModal() {
+    document.getElementById('resultModal').style.display = 'none';
+    document.getElementById('modalBackground').style.display = 'none';
+}
+
+// ========================================
 // アプリケーション初期化
+// ========================================
 const app = new PomodoroApp();
 const tabSystem = new TabSystem();
